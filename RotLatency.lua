@@ -95,7 +95,7 @@ table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
 				end
 
 				local perc = (vv.total or 1) / #vv
-				local dur = FormatDuration(data[id].elapsed, "s")
+				local dur = FormatDuration(data[id].elapsed, "f")
 				vv.txt = format("(%s) %s: (%.2f sec) - %.2f avg", tostring(dur), data[id].name, latency, perc)
 			end
 		end
