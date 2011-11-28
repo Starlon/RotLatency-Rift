@@ -70,37 +70,39 @@ table.insert(Event.Ability.Cooldown.Begin, {function(cooldowns)
 end, "RotLatency", "refresh"})
 
 
-local lastUpdate = GetTime()
 local lastFrame = text
 local toDraw = {}
+local lastUpdate = GetTime()
 table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
-	local time = GetTime()
-        local elapsed = time - lastUpdate
+	local elapsed = GetTime() - lastUpdate
+	lastUpdate = GetTime()
+	local time = lastUpdate
 	local width = frame:GetWidth()
 	local height = text:GetHeight()
 	local count = 0
-	lastFrame = text
 	for id, v in pairs(cooldowns) do
 		if data[id] then
 			local entry1 = data[id][#data[id]] or {} -- trash
 			local entry2 = #data[id] > 1 and data[id][#data[id]-1]
 			entry1.finish = GetTime() 
-			if entry1 and entry2 then
+			if entry1 and entry2 and data[id].cooldown then
 				local vv = data[id]
 				vv.elapsed = (vv.elapsed or 0) + elapsed
 				local text = data[id].text
 				local latency = entry1.start - (entry2.finish or entry1.start)
-				if latency < 0.5 then
-					vv.elapsed = 0
+				if latency < 0.1 then
+					vv.elapsed = -1
+					vv.lastUpdate = GetTime()
 				end
 
 				local perc = (vv.total or 1) / #vv
-				local dur = FormatDuration(data[id].elapsed, "f")
+				local dur = FormatDuration(vv.elapsed, "f")
 				vv.txt = format("(%s) %s: (%.2f sec) - %.2f avg", tostring(dur), data[id].name, latency, perc)
 			end
 		end
 	end
 	count = 0
+
 
 
 end, "RotLatency", "Cooldown.End"})
