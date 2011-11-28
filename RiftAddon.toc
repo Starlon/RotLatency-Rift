@@ -16,3 +16,6 @@ RunOnStartup = {
   "RotLatency.lua",
 }
 
+Dependencies = {
+  LibScriptable_1_0 = {"required", "before"}
+}

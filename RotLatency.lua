@@ -6,6 +6,8 @@ local ctx = UI.CreateContext("RotLatency")
 local frame = UI.CreateFrame("Frame", "RotLatency", ctx)
 local text = UI.CreateFrame("Text", "Text", frame)
 local FormatDuration = LibStub("LibScriptablePluginLuaTexts-1.0"):New({}).FormatDuration
+local core = LibStub("LibScriptableLCDCoreLite-1.0")
+local WidgetText = LibStub("LibScriptableWidgetText-1.0")
 
 
 local abilities = Inspect.Ability.List()
@@ -88,16 +90,17 @@ table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
 			if entry1 and entry2 and data[id].cooldown then
 				local vv = data[id]
 				vv.elapsed = (vv.elapsed or 0) + elapsed
-				local text = data[id].text
+				--local text = data[id].text
 				local latency = entry1.start - (entry2.finish or entry1.start)
-				if latency < 0.1 then
-					vv.elapsed = -1
+				if latency > 0.5 then
+					vv.elapsed = 0
 					vv.lastUpdate = GetTime()
 				end
 
 				local perc = (vv.total or 1) / #vv
-				local dur = FormatDuration(vv.elapsed, "f")
-				vv.txt = format("(%s) %s: (%.2f sec) - %.2f avg", tostring(dur), data[id].name, latency, perc)
+				vv.latency = latency
+				vv.perc = perc
+				
 			end
 		end
 	end
@@ -107,14 +110,26 @@ table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
 
 end, "RotLatency", "Cooldown.End"})
 
+local lastUpdate = GetTime()
 function draw()
+	local time = GetTime()
+	local elapsed = time - lastUpdate
+	lastUpdate = time
 	for k, v in pairs(texts) do
 		v:SetText("")
 	end
 	local count = 1
 	for i, v in pairs(data) do
 		local text = texts[count]
-		text:SetText(v.txt or v.name)
+		if v.latency then
+			v.elapsed = v.elapsed + elapsed
+			v.dur = FormatDuration(v.elapsed, "f")
+			v.txt = format("(%s) %s: (%.2f sec) - %.2f avg", v.dur, v.name, v.latency, v.perc)
+			text:SetText(v.txt)
+		else
+			text:SetText(v.name)
+		end
+		
 		text:ResizeToText()
 		local w = text:GetWidth()
 		local h = text:GetHeight()
@@ -126,6 +141,7 @@ function draw()
 		end
 		count = count + 1
 	end
+		
 	frame:SetWidth(width)
 	frame:SetHeight(height * (count + 1))
 
