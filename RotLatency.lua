@@ -8,6 +8,7 @@ local text = UI.CreateFrame("Text", "Text", frame)
 local FormatDuration = LibStub("LibScriptablePluginLuaTexts-1.0"):New({}).FormatDuration
 local core = LibStub("LibScriptableLCDCoreLite-1.0")
 local WidgetText = LibStub("LibScriptableWidgetText-1.0")
+local Timer = LibStub("LibScriptableUtilsTimer-1.0")
 
 
 local abilities = Inspect.Ability.List()
@@ -111,9 +112,14 @@ table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
 end, "RotLatency", "Cooldown.End"})
 
 local lastUpdate = GetTime()
+local elapsed = 0
 function draw()
 	local time = GetTime()
-	local elapsed = time - lastUpdate
+	local delta = GetTime() - lastUpdate
+	if delta < .5 then
+		elapsed = elapsed + delta
+		return
+	end
 	lastUpdate = time
 	for k, v in pairs(texts) do
 		v:SetText("")
@@ -123,6 +129,7 @@ function draw()
 		local text = texts[count]
 		if v.latency then
 			v.elapsed = v.elapsed + elapsed
+			elapsed = 0
 			v.dur = FormatDuration(v.elapsed, "f")
 			v.txt = format("(%s) %s: (%.2f sec) - %.2f avg", v.dur, v.name, v.latency, v.perc)
 			text:SetText(v.txt)
@@ -148,4 +155,5 @@ function draw()
 end
 
 
-table.insert(Event.System.Update.Begin, {draw, "RotLatency", "refresh"})
+local timer = Timer:New("RotLatency", 100, false, draw):Start()
+
