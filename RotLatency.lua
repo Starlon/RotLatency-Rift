@@ -73,7 +73,6 @@ table.insert(Event.Ability.Cooldown.Begin, {function(cooldowns)
 end, "RotLatency", "refresh"})
 
 
-local lastFrame = text
 local toDraw = {}
 local lastUpdate = GetTime()
 table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
@@ -91,7 +90,6 @@ table.insert(Event.Ability.Cooldown.End, {function(cooldowns)
 			if entry1 and entry2 and data[id].cooldown then
 				local vv = data[id]
 				vv.elapsed = (vv.elapsed or 0) + elapsed
-				--local text = data[id].text
 				local latency = entry1.start - (entry2.finish or entry1.start)
 				if latency > 0.5 then
 					vv.elapsed = 0
@@ -155,5 +153,6 @@ function draw()
 end
 
 
-local timer = Timer:New("RotLatency", 100, false, draw):Start()
-
+--table.insert(Event.System.Update.Begin, {draw, "RotLatency", "draw"})
+local timer = Timer:New("RotLatency", 100, true, draw)
+timer:Start()
