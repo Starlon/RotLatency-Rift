@@ -9,6 +9,7 @@ local FormatDuration = LibStub("LibScriptablePluginLuaTexts-1.0"):New({}).Format
 local core = LibStub("LibScriptableLCDCoreLite-1.0")
 local WidgetText = LibStub("LibScriptableWidgetText-1.0")
 local Timer = LibStub("LibScriptableUtilsTimer-1.0")
+local Color = LibStub("LibScriptablePluginColor-1.0")
 
 
 local abilities = Inspect.Ability.List()
@@ -16,16 +17,42 @@ local oldFrame = text
 local count = 0
 
 text:SetPoint("TOPLEFT", frame, "TOPLEFT")
-text:SetVisible(true)
-text:SetText("--RotLatency--")
+--text:SetVisible(true)
+--text:SetText("--RotLatency--")
 text:ResizeToText()
 
 frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 40, 40)
-frame:SetBackgroundColor(0, 0, 0, 1)
+local r, g, b, a = 0, 0, 0, 1
+frame:SetBackgroundColor(r, g, b, a)
 frame:SetWidth(text:GetWidth())
 frame:SetHeight(text:GetHeight())
 frame:SetVisible(true)
 
+local count = 0
+local pixel = 10
+
+local x, y = 0, 0
+local s = 0
+for h = 0, 360, 360/30 do
+	for v = 99, 0, -(100/8) do
+		local s = 100
+		y = count * pixel
+			
+		local texture = UI.CreateFrame("Texture", "TExture", frame)
+	
+		texture:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
+	
+		local r, g, b = Color.HSV2RGB(h/360, s/100, v/100)
+		texture:SetBackgroundColor(r, g, b)
+		texture:SetWidth(pixel)
+		texture:SetHeight(pixel)
+		count = count + 1
+	end
+	x = x + pixel
+	count = 0
+end
+
+do return end
 local height = text:GetHeight()
 local width = text:GetWidth()
 
@@ -36,26 +63,31 @@ local within = function(tbl, txt)
 end
 
 local record = {}
-local count = 0
-for k,v in pairs(abilities or {}) do
-	local details = Inspect.Ability.Detail(k)
-	if details then
-		count = count + 1
-		local text = UI.CreateFrame("Text", "Text"..count, frame)
-		text:SetText(details.name)
-		text:ResizeToText()
-		if text:GetWidth() > width then
-			width = text:GetWidth()
+local first = true
+table.insert(Event.Unit.Available, {function()
+	if not first then return end
+	first = false
+	local count = 0
+	for k,v in pairs(abilities or {}) do
+		local details = Inspect.Ability.Detail(k)
+		if details then
+			count = count + 1
+			local text = UI.CreateFrame("Text", "Text"..count, frame)
+			text:SetText(details.name)
+			text:ResizeToText()
+			if text:GetWidth() > width then
+				width = text:GetWidth()
+			end
+			data[k] ={id=k, 
+				name=details.name, 
+				cooldown=details.cooldown or 1.5, i = count}
+			text:SetText(details.name)
+			text:ResizeToText()
+			text:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, count * height)
+			tinsert(texts, text)
 		end
-		data[k] ={id=k, 
-			name=details.name, 
-			cooldown=details.cooldown or 1.5, i = count}
-		text:SetText(details.name)
-		text:ResizeToText()
-		text:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, count * height)
-		tinsert(texts, text)
-	end
-end
+	end 
+end, "RotLatency", "Available"})
 
 frame:SetWidth(width)
 frame:SetHeight((count + 1) * height )
