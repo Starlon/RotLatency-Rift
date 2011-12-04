@@ -1,0 +1,6 @@
+package-as: RotLatency
+
+externals:
+    Libs/LibScriptable-1.0: git://github.com/Starlon/LibScriptableRift-1.0.git
+    Libs/LibFlash: git://github.com/Starlon/LibFlash-Rift.git
+
