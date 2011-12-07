@@ -17,8 +17,8 @@ local oldFrame = text
 local count = 0
 
 text:SetPoint("TOPLEFT", frame, "TOPLEFT")
---text:SetVisible(true)
---text:SetText("--RotLatency--")
+text:SetVisible(true)
+text:SetText("--RotLatency--")
 text:ResizeToText()
 
 frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 40, 40)
@@ -28,49 +28,26 @@ frame:SetWidth(text:GetWidth())
 frame:SetHeight(text:GetHeight())
 frame:SetVisible(true)
 
-local count = 0
-local pixel = 10
-
-local x, y = 0, 0
-local s = 0
-for h = 0, 360, 360/30 do
-	for v = 99, 0, -(100/8) do
-		local s = 100
-		y = count * pixel
-			
-		local texture = UI.CreateFrame("Texture", "TExture", frame)
-	
-		texture:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
-	
-		local r, g, b = Color.HSV2RGB(h/360, s/100, v/100)
-		texture:SetBackgroundColor(r, g, b)
-		texture:SetWidth(pixel)
-		texture:SetHeight(pixel)
-		count = count + 1
-	end
-	x = x + pixel
-	count = 0
-end
-
-do return end
 local height = text:GetHeight()
 local width = text:GetWidth()
 
+--[[
 local within = function(tbl, txt)
 	for _, val in pairs(tbl) do
 		if val == txt then return txt end
 	end
 end
+]]
 
 local record = {}
 local first = true
-table.insert(Event.Unit.Available, {function()
-	if not first then return end
+table.insert(Event.Ability.Add, {function(abilities)
+	--if not first then return end
 	first = false
 	local count = 0
 	for k,v in pairs(abilities or {}) do
 		local details = Inspect.Ability.Detail(k)
-		if details then
+		if details and details.cooldown then
 			count = count + 1
 			local text = UI.CreateFrame("Text", "Text"..count, frame)
 			text:SetText(details.name)
